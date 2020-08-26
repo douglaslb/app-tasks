@@ -11,7 +11,7 @@ class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
        itemView.textViewTask.text = item.description
 
        itemView.buttonSettings.setOnClickListener {
-           Toast.makeText(itemView.context, "Settigns", Toast.LENGTH_SHORT).show()
+           Toast.makeText(itemView.context, "Settings", Toast.LENGTH_SHORT).show()
        }
     }
 }

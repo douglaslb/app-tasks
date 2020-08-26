@@ -1,13 +1,14 @@
 package br.com.fiap.roomdatabase
 
-import AppDatabase
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
+import androidx.activity.viewModels
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.room.Room
+import br.com.fiap.roomdatabase.task.AppDatabase
 import br.com.fiap.roomdatabase.task.Task
 import br.com.fiap.roomdatabase.task.TaskAdapter
 import br.com.fiap.roomdatabase.task.TaskDao
@@ -18,14 +19,20 @@ class MainActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private val taskAdapter = TaskAdapter()
 
+    private var taskDao: TaskDao? = null
 
+    val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val database = Room.databaseBuilder(applicationContext, AppDatabase::class.java,
-            "AppDatabase").build()
+        val database = AppDatabase.getDatabase(this)
+        taskDao = database.taskDao()
+
+        val tasks = taskDao!!.getAll()
+        viewModel.getTasks(tasks)
+
 
         editText = findViewById(R.id.editTextTarefa)
         recyclerView = findViewById(R.id.recyclerView)
@@ -36,7 +43,9 @@ class MainActivity : AppCompatActivity() {
 
             when(actionId) {
                 EditorInfo.IME_ACTION_DONE -> {
-                    insertTask()
+                    val task = Task(description = editText.text.toString())
+                    editText.text = null
+                    viewModel.createTask(task)
                     true
                 }
                 else ->{
@@ -44,11 +53,18 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
+
+        viewModel.liveCreateTask.observe(this, Observer {
+            taskAdapter.addTask(it)
+            taskDao!!.insert(it)
+        })
+
+        viewModel.liveGetTasks.observe(this, Observer {
+            taskAdapter.updateItems(it)
+        })
     }
 
-    private fun insertTask() {
-        val item = Task(description = editText.text.toString())
-         taskAdapter.addTask(item)
-    }
+
 
 }

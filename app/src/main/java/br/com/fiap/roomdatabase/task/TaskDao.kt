@@ -10,5 +10,5 @@ interface TaskDao {
     fun getAll(): List<Task>
 
     @Insert
-    fun insertAll(vararg task: Task)
+    fun insert(vararg task: Task)
 }
